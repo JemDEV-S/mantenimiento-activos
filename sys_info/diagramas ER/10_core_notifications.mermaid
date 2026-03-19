@@ -1,0 +1,38 @@
+erDiagram
+    notification_templates {
+        bigint id PK
+        string code UK
+        string name
+        string event_type
+        string module "assets|maintenance|campaigns|agent|ai|auth|general"
+        string channel "email|database|broadcast"
+        string subject
+        text body_template
+        json available_variables
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    notifications {
+        bigint id PK
+        string uuid UK
+        bigint user_id FK
+        bigint template_id FK
+        string channel "email|database|broadcast"
+        string notification_type
+        string notifiable_type "polimórfica"
+        bigint notifiable_id
+        string module "assets|maintenance|campaigns|agent|ai|auth|general"
+        string subject
+        text content_preview
+        json data
+        string status "pending|sent|failed|read"
+        text error_message
+        timestamp sent_at
+        timestamp read_at
+        timestamp created_at
+    }
+
+    notification_templates ||--o{ notifications : "usa_plantilla"
+    users ||--o{ notifications : "recibe"

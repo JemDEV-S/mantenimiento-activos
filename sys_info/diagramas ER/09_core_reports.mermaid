@@ -1,0 +1,141 @@
+erDiagram
+    report_definitions {
+        bigint id PK
+        string code UK
+        string name
+        string module "assets|maintenance|campaigns|agent|general"
+        string category "operativo|administrativo|estrategico"
+        text description
+        string query_class
+        json available_filters
+        json available_columns
+        json default_filters
+        json default_columns
+        string default_sort_field
+        string default_sort_direction
+        json export_formats
+        string chart_type "bar|line|pie|doughnut|area|table|mixed"
+        json chart_config
+        boolean is_active
+        boolean is_system
+        integer sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    saved_report_views {
+        bigint id PK
+        string name
+        bigint report_definition_id FK
+        bigint user_id FK
+        json applied_filters
+        json selected_columns
+        string sort_field
+        string sort_direction
+        string chart_type
+        json chart_config
+        boolean is_default
+        boolean is_shared
+        bigint shared_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    dashboard_widgets {
+        bigint id PK
+        string code UK
+        string name
+        string widget_type "counter|chart|table|list|progress|map|calendar|alert_summary"
+        string module "assets|maintenance|campaigns|agent|general"
+        string data_source_class
+        json default_config
+        json available_parameters
+        string size "small|medium|large|full"
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    user_dashboards {
+        bigint id PK
+        string name
+        bigint user_id FK
+        string dashboard_type "principal|operativo|gerencial|tecnico|personalizado"
+        boolean is_default
+        integer sort_order
+        json layout_config
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    user_dashboard_widgets {
+        bigint id PK
+        bigint dashboard_id FK
+        bigint widget_id FK
+        json parameters
+        integer position_x
+        integer position_y
+        integer width
+        integer height
+        integer sort_order
+        boolean is_visible
+        integer refresh_interval_seconds
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    scheduled_reports {
+        bigint id PK
+        string name
+        bigint report_definition_id FK
+        bigint saved_view_id FK
+        bigint user_id FK
+        string frequency "diario|semanal|quincenal|mensual|trimestral"
+        string day_of_week
+        integer day_of_month
+        string time_of_day
+        string export_format "pdf|excel|csv"
+        json recipients_emails
+        json recipients_user_ids
+        boolean is_active
+        timestamp last_sent_at
+        timestamp next_send_at
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    report_executions {
+        bigint id PK
+        bigint report_definition_id FK
+        bigint saved_view_id FK
+        bigint scheduled_report_id FK
+        bigint user_id FK
+        string execution_type "manual|scheduled|export"
+        json applied_filters
+        string export_format
+        string file_path
+        integer file_size
+        integer records_count
+        integer execution_time_ms
+        string status "processing|completed|failed"
+        text error_message
+        timestamp executed_at
+        timestamp completed_at
+        timestamp created_at
+    }
+
+    report_definitions ||--o{ saved_report_views : "tiene_vistas"
+    report_definitions ||--o{ scheduled_reports : "programado"
+    report_definitions ||--o{ report_executions : "ejecutado"
+    saved_report_views ||--o{ scheduled_reports : "usa_vista"
+    saved_report_views ||--o{ report_executions : "usa_vista"
+    scheduled_reports ||--o{ report_executions : "genera"
+    users ||--o{ saved_report_views : "guarda"
+    users ||--o{ user_dashboards : "configura"
+    users ||--o{ scheduled_reports : "programa"
+    users ||--o{ report_executions : "ejecuta"
+    user_dashboards ||--o{ user_dashboard_widgets : "contiene"
+    dashboard_widgets ||--o{ user_dashboard_widgets : "instanciado"

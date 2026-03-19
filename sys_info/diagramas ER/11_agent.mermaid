@@ -1,0 +1,189 @@
+erDiagram
+    agent_devices {
+        bigint id PK
+        string uuid UK
+        string device_token UK
+        string hostname
+        string device_identifier UK
+        string manufacturer
+        string model
+        string serial_number
+        string os_name
+        string os_version
+        string os_architecture
+        string domain
+        string workgroup
+        string current_user
+        string agent_version
+        bigint asset_id FK
+        string link_status "vinculado|pendiente|no_vinculado|rechazado"
+        bigint linked_by FK
+        timestamp linked_at
+        boolean is_active
+        boolean is_online
+        string last_ip_address
+        timestamp last_heartbeat_at
+        timestamp first_seen_at
+        timestamp last_sync_at
+        text notes
+        bigint registered_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    agent_heartbeats {
+        bigint id PK
+        bigint device_id FK
+        string ip_address
+        string agent_version
+        integer uptime_seconds
+        decimal cpu_usage_percent
+        decimal ram_usage_percent
+        decimal disk_usage_percent
+        boolean internet_connected
+        string status "ok|warning|critical"
+        json extra_metrics
+        timestamp reported_at
+        timestamp created_at
+    }
+
+    agent_hardware_snapshots {
+        bigint id PK
+        bigint device_id FK
+        string snapshot_hash UK
+        string hostname
+        string manufacturer
+        string model
+        string serial_number
+        string bios_version
+        string motherboard
+        string motherboard_serial
+        string processor_name
+        integer processor_cores
+        integer processor_threads
+        decimal processor_speed_ghz
+        integer ram_total_mb
+        integer ram_available_mb
+        integer ram_slots_used
+        integer ram_slots_total
+        json ram_modules
+        json disks
+        integer disk_total_gb
+        integer disk_free_gb
+        json monitors
+        json gpu_info
+        json usb_devices
+        json other_peripherals
+        boolean has_changes
+        text change_summary
+        bigint previous_snapshot_id FK
+        timestamp captured_at
+        timestamp created_at
+    }
+
+    agent_software_snapshots {
+        bigint id PK
+        bigint device_id FK
+        string snapshot_hash UK
+        string os_name
+        string os_version
+        string os_build
+        string os_architecture
+        string os_license_status
+        string computer_name
+        json installed_software
+        integer installed_software_count
+        string antivirus_name
+        string antivirus_status
+        string antivirus_version
+        date antivirus_last_update
+        json startup_programs
+        json windows_updates_pending
+        date last_windows_update
+        boolean has_changes
+        text change_summary
+        bigint previous_snapshot_id FK
+        timestamp captured_at
+        timestamp created_at
+    }
+
+    agent_network_snapshots {
+        bigint id PK
+        bigint device_id FK
+        string snapshot_hash UK
+        json network_adapters
+        string primary_ip
+        string primary_mac
+        string primary_adapter_name
+        string gateway
+        string dns_servers
+        string domain
+        string workgroup
+        boolean is_domain_joined
+        boolean wifi_connected
+        string wifi_ssid
+        integer wifi_signal_strength
+        boolean vpn_connected
+        string vpn_name
+        json open_ports
+        boolean has_changes
+        text change_summary
+        bigint previous_snapshot_id FK
+        timestamp captured_at
+        timestamp created_at
+    }
+
+    agent_alerts {
+        bigint id PK
+        bigint device_id FK
+        string alert_type "hardware_change|software_change|disk_critical|ram_critical|cpu_critical|offline|antivirus_issue|unauthorized_software|network_change"
+        string severity "info|warning|critical"
+        string title
+        text description
+        json alert_data
+        string status "nueva|vista|atendida|descartada"
+        bigint attended_by FK
+        text resolution_notes
+        timestamp alerted_at
+        timestamp attended_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    agent_config {
+        bigint id PK
+        string key UK
+        string value
+        string description
+        string data_type "string|integer|boolean|json"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    agent_sync_logs {
+        bigint id PK
+        bigint device_id FK
+        string sync_type "heartbeat|hardware|software|network|alert|registration"
+        string status "success|error|rejected"
+        integer payload_size_bytes
+        integer response_time_ms
+        string ip_address
+        text error_message
+        json request_summary
+        timestamp synced_at
+        timestamp created_at
+    }
+
+    agent_devices ||--o{ agent_heartbeats : "reporta"
+    agent_devices ||--o{ agent_hardware_snapshots : "captura_hw"
+    agent_devices ||--o{ agent_software_snapshots : "captura_sw"
+    agent_devices ||--o{ agent_network_snapshots : "captura_red"
+    agent_devices ||--o{ agent_alerts : "genera"
+    agent_devices ||--o{ agent_sync_logs : "registra_sync"
+    agent_devices }o--o| assets : "vinculado_a"
+    agent_hardware_snapshots }o--o| agent_hardware_snapshots : "snapshot_previo"
+    agent_software_snapshots }o--o| agent_software_snapshots : "snapshot_previo"
+    agent_network_snapshots }o--o| agent_network_snapshots : "snapshot_previo"
+    employees ||--o{ agent_alerts : "atiende"
+    employees ||--o{ agent_devices : "vincula"

@@ -1,0 +1,168 @@
+erDiagram
+    ai_providers {
+        bigint id PK
+        string name UK
+        string slug UK
+        string provider_type "openai|anthropic|google|azure|ollama|custom"
+        string api_base_url
+        string api_key_encrypted
+        string default_model
+        json available_models
+        integer max_tokens
+        decimal temperature
+        decimal top_p
+        integer timeout_seconds
+        integer rate_limit_per_minute
+        integer daily_request_limit
+        integer monthly_request_limit
+        integer current_daily_usage
+        integer current_monthly_usage
+        decimal cost_per_1k_input_tokens
+        decimal cost_per_1k_output_tokens
+        boolean is_active
+        boolean is_default
+        json extra_config
+        text notes
+        timestamp last_health_check_at
+        string last_health_status "ok|degraded|down"
+        bigint created_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    ai_prompt_templates {
+        bigint id PK
+        string code UK
+        string name
+        string category "redaccion|resumen|diagnostico|clasificacion|consulta|informe|analisis"
+        string module "assets|maintenance|campaigns|reports|general"
+        text system_prompt
+        text user_prompt_template
+        json required_variables
+        json optional_variables
+        string output_format "text|json|markdown"
+        integer max_tokens
+        decimal temperature
+        integer version
+        boolean is_active
+        boolean is_default
+        text description
+        text example_output
+        bigint created_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    ai_requests {
+        bigint id PK
+        string uuid UK
+        bigint provider_id FK
+        bigint template_id FK
+        bigint user_id FK
+        string model_used
+        string category "redaccion|resumen|diagnostico|clasificacion|consulta|informe|analisis"
+        string module "assets|maintenance|campaigns|reports|general"
+        string contextable_type "polimórfica"
+        bigint contextable_id
+        text system_prompt_sent
+        text user_prompt_sent
+        json context_data
+        integer input_tokens
+        integer output_tokens
+        integer total_tokens
+        decimal estimated_cost
+        integer response_time_ms
+        string status "pending|processing|completed|failed|timeout|cancelled"
+        text error_message
+        string error_code
+        integer retry_count
+        timestamp sent_at
+        timestamp completed_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ai_responses {
+        bigint id PK
+        bigint request_id FK
+        text raw_response
+        text parsed_response
+        string output_format "text|json|markdown"
+        string usage_action "accepted|edited|rejected|ignored"
+        text edited_content
+        text rejection_reason
+        bigint reviewed_by FK
+        integer quality_rating
+        text quality_feedback
+        boolean was_useful
+        boolean was_applied
+        string applied_to_type "polimórfica"
+        bigint applied_to_id
+        text applied_field
+        timestamp reviewed_at
+        timestamp applied_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ai_conversations {
+        bigint id PK
+        string uuid UK
+        bigint user_id FK
+        bigint provider_id FK
+        string title
+        string module "assets|maintenance|campaigns|reports|general"
+        string contextable_type "polimórfica"
+        bigint contextable_id
+        string status "active|closed|archived"
+        integer total_messages
+        integer total_tokens_used
+        decimal total_cost
+        timestamp last_message_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ai_conversation_messages {
+        bigint id PK
+        bigint conversation_id FK
+        bigint request_id FK
+        string role "user|assistant|system"
+        text content
+        integer tokens
+        integer sequence
+        timestamp created_at
+    }
+
+    ai_usage_stats {
+        bigint id PK
+        bigint provider_id FK
+        date stat_date
+        string module
+        string category
+        integer total_requests
+        integer successful_requests
+        integer failed_requests
+        integer total_input_tokens
+        integer total_output_tokens
+        decimal total_cost
+        integer avg_response_time_ms
+        decimal avg_quality_rating
+        integer accepted_count
+        integer rejected_count
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ai_providers ||--o{ ai_requests : "procesa"
+    ai_providers ||--o{ ai_conversations : "usa"
+    ai_providers ||--o{ ai_usage_stats : "estadisticas"
+    ai_prompt_templates ||--o{ ai_requests : "usa_plantilla"
+    ai_requests ||--|| ai_responses : "genera"
+    ai_requests }o--o| ai_conversation_messages : "parte_de"
+    ai_conversations ||--o{ ai_conversation_messages : "contiene"
+    users ||--o{ ai_requests : "solicita"
+    users ||--o{ ai_conversations : "inicia"
+    users ||--o{ ai_responses : "revisa"

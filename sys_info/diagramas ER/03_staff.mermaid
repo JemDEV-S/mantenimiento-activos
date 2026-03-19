@@ -1,0 +1,56 @@
+erDiagram
+    employees {
+        bigint id PK
+        string code UK
+        string dni UK
+        string first_name
+        string last_name
+        string full_name
+        string email
+        string phone
+        string position
+        string employment_type "nombrado|contratado|cas|tercero|practicante"
+        bigint organizational_unit_id FK
+        bigint sede_id FK
+        bigint user_id FK
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    tecnicos {
+        bigint id PK
+        bigint employee_id FK
+        string specialty
+        string certification
+        string level "junior|senior|lead"
+        boolean available
+        boolean is_active
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    proveedores {
+        bigint id PK
+        string ruc UK
+        string business_name
+        string trade_name
+        string contact_name
+        string phone
+        string email
+        string address
+        string category
+        text notes
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    employees ||--o| tecnicos : "puede_ser"
+    employees ||--o| users : "vinculado_a"
+    employees }o--o| organizational_units : "pertenece_a"
+    employees }o--o| sedes : "trabaja_en"

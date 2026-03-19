@@ -1,0 +1,113 @@
+erDiagram
+    activity_logs {
+        bigint id PK
+        string uuid UK
+        bigint user_id FK
+        string action "create|update|delete|restore|view|download|export|login|logout|assign|approve|reject|generate|send|import"
+        string module "auth|organization|staff|assets|assignments|maintenance|campaigns|documents|reports|agent|ai|audit|settings"
+        string auditable_type "polimórfica"
+        bigint auditable_id
+        string auditable_label
+        string description
+        json old_values
+        json new_values
+        json changed_fields
+        string ip_address
+        text user_agent
+        string session_id
+        string route_name
+        string url
+        string method "GET|POST|PUT|PATCH|DELETE"
+        integer response_code
+        integer duration_ms
+        json extra_data
+        timestamp performed_at
+        timestamp created_at
+    }
+
+    audit_trails {
+        bigint id PK
+        string uuid UK
+        bigint user_id FK
+        string event_type "data_change|access|security|system|document|agent_sync|ai_interaction|campaign_action|bulk_operation"
+        string severity "info|notice|warning|critical"
+        string module
+        string entity_type
+        bigint entity_id
+        string entity_label
+        string action
+        text summary
+        json before_state
+        json after_state
+        json context
+        string ip_address
+        string user_agent_hash
+        string session_id
+        boolean is_system_event
+        boolean requires_review
+        bigint reviewed_by FK
+        text review_notes
+        timestamp reviewed_at
+        timestamp occurred_at
+        timestamp created_at
+    }
+
+    login_attempts {
+        bigint id PK
+        bigint user_id FK
+        string email
+        string ip_address
+        text user_agent
+        boolean successful
+        string failure_reason
+        string country
+        string city
+        timestamp attempted_at
+        timestamp created_at
+    }
+
+    data_exports {
+        bigint id PK
+        bigint user_id FK
+        string export_type "excel|pdf|csv|json"
+        string module
+        string entity_type
+        json filter_criteria
+        integer records_count
+        string file_path
+        integer file_size
+        string status "pending|processing|completed|failed"
+        text error_message
+        string ip_address
+        timestamp requested_at
+        timestamp completed_at
+        timestamp expires_at
+        timestamp created_at
+    }
+
+    system_events {
+        bigint id PK
+        string event_type "job_failed|queue_stuck|agent_offline|ai_provider_down|disk_full|export_failed|batch_error|scheduled_task"
+        string severity "info|warning|error|critical"
+        string source "system|queue|agent|ai|scheduler|storage"
+        string title
+        text description
+        json event_data
+        string status "new|acknowledged|resolved|ignored"
+        bigint acknowledged_by FK
+        bigint resolved_by FK
+        text resolution_notes
+        timestamp occurred_at
+        timestamp acknowledged_at
+        timestamp resolved_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    users ||--o{ activity_logs : "realiza"
+    users ||--o{ audit_trails : "genera"
+    users ||--o{ audit_trails : "revisa"
+    users ||--o{ login_attempts : "intenta"
+    users ||--o{ data_exports : "exporta"
+    users ||--o{ system_events : "reconoce"
+    users ||--o{ system_events : "resuelve"

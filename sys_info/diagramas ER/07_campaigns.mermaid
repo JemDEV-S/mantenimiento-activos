@@ -1,0 +1,168 @@
+erDiagram
+    campaign_statuses {
+        bigint id PK
+        string name UK
+        string slug UK
+        string color
+        string description
+        integer sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_campaigns {
+        bigint id PK
+        string code UK
+        string name
+        text objective
+        text description
+        bigint campaign_status_id FK
+        bigint maintenance_type_id FK
+        string scope "municipalidad|sede|gerencia|subgerencia|oficina|area|tipo_activo"
+        date planned_start_date
+        date planned_end_date
+        date actual_start_date
+        date actual_end_date
+        integer total_assets_planned
+        integer total_assets_attended
+        integer total_assets_pending
+        integer total_assets_observed
+        integer total_assets_out_of_service
+        decimal estimated_cost
+        decimal actual_cost
+        decimal coverage_percentage
+        decimal avg_attention_minutes
+        text scope_filters_json
+        text closing_summary
+        text closing_recommendations
+        bigint coordinator_id FK
+        bigint approved_by FK
+        bigint closed_by FK
+        timestamp approved_at
+        timestamp closed_at
+        bigint created_by FK
+        bigint updated_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    campaign_scope_filters {
+        bigint id PK
+        bigint campaign_id FK
+        string filter_type "sede|organizational_unit|tipo_activo|estado|criticidad|ultimo_mantenimiento"
+        string filter_operator "eq|in|gt|lt|between"
+        text filter_value
+        timestamp created_at
+    }
+
+    campaign_assets {
+        bigint id PK
+        bigint campaign_id FK
+        bigint asset_id FK
+        bigint assigned_technician_id FK
+        string status "programado|en_proceso|completado|observado|reprogramado|no_atendido|fuera_servicio"
+        integer lot_number
+        string zone
+        date scheduled_date
+        date attended_date
+        bigint maintenance_order_id FK
+        text observations
+        string priority "alta|media|baja"
+        boolean requires_reschedule
+        date rescheduled_date
+        bigint rescheduled_to_campaign_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    campaign_technicians {
+        bigint id PK
+        bigint campaign_id FK
+        bigint technician_id FK
+        string role "lider|tecnico|apoyo"
+        string assigned_zone
+        bigint assigned_sede_id FK
+        bigint assigned_organizational_unit_id FK
+        integer assigned_lot
+        date start_date
+        date end_date
+        integer total_assigned
+        integer total_completed
+        boolean is_active
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    campaign_progress {
+        bigint id PK
+        bigint campaign_id FK
+        date progress_date
+        integer cumulative_attended
+        integer cumulative_pending
+        integer cumulative_observed
+        integer cumulative_out_of_service
+        decimal cumulative_cost
+        decimal coverage_percentage
+        text daily_notes
+        bigint reported_by FK
+        timestamp created_at
+    }
+
+    campaign_milestones {
+        bigint id PK
+        bigint campaign_id FK
+        string milestone_name
+        text description
+        date target_date
+        date actual_date
+        string status "pendiente|en_proceso|completado|cancelado"
+        bigint responsible_id FK
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    campaign_documents {
+        bigint id PK
+        bigint campaign_id FK
+        bigint document_id FK
+        string document_role "plan|informe_avance|informe_final|acta_individual|resumen_lote|aprobacion|cierre"
+        text description
+        bigint generated_by FK
+        timestamp created_at
+    }
+
+    campaign_notifications {
+        bigint id PK
+        bigint campaign_id FK
+        bigint recipient_id FK
+        string notification_type "inicio|recordatorio|avance|cierre|reprogramacion"
+        string channel "email|sistema|ambos"
+        text message
+        boolean is_read
+        timestamp sent_at
+        timestamp read_at
+        timestamp created_at
+    }
+
+    campaign_statuses ||--o{ maintenance_campaigns : "estado"
+    maintenance_campaigns ||--o{ campaign_scope_filters : "filtrada_por"
+    maintenance_campaigns ||--o{ campaign_assets : "incluye"
+    maintenance_campaigns ||--o{ campaign_technicians : "asigna"
+    maintenance_campaigns ||--o{ campaign_progress : "registra_avance"
+    maintenance_campaigns ||--o{ campaign_milestones : "tiene_hitos"
+    maintenance_campaigns ||--o{ campaign_documents : "genera"
+    maintenance_campaigns ||--o{ campaign_notifications : "notifica"
+    maintenance_campaigns ||--o{ campaign_assets : "reprogramado_desde"
+    assets ||--o{ campaign_assets : "incluido_en"
+    tecnicos ||--o{ campaign_assets : "atiende"
+    tecnicos ||--o{ campaign_technicians : "participa"
+    maintenance_orders ||--o| campaign_assets : "vinculado"
+    documents ||--o{ campaign_documents : "referenciado"
+    employees ||--o{ maintenance_campaigns : "coordina"
+    employees ||--o{ campaign_notifications : "recibe"
+    employees ||--o{ campaign_milestones : "responsable"
+    sedes ||--o{ campaign_technicians : "sede_asignada"
+    organizational_units ||--o{ campaign_technicians : "unidad_asignada"

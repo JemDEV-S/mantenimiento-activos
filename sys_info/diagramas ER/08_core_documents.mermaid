@@ -1,0 +1,135 @@
+erDiagram
+    document_types {
+        bigint id PK
+        string name UK
+        string slug UK
+        string description
+        string module "assets|maintenance|campaigns|assignments|general"
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    document_templates {
+        bigint id PK
+        string code UK
+        string name
+        bigint document_type_id FK
+        string module "assets|maintenance|campaigns|assignments|general"
+        string format "pdf|excel|word"
+        string template_path
+        string blade_view
+        text description
+        json default_variables
+        json available_placeholders
+        string orientation "portrait|landscape"
+        string paper_size "a4|letter|legal"
+        boolean has_header
+        boolean has_footer
+        boolean has_qr_code
+        boolean has_signature_section
+        integer version
+        boolean is_active
+        boolean is_default
+        bigint created_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    documents {
+        bigint id PK
+        string uuid UK
+        string code UK
+        string title
+        bigint document_type_id FK
+        bigint template_id FK
+        string documentable_type "polimórfica"
+        bigint documentable_id
+        string module "assets|maintenance|campaigns|assignments"
+        string file_name
+        string file_path
+        string mime_type
+        integer file_size
+        string format "pdf|excel|word"
+        string status "generando|generado|error|anulado"
+        string verification_code UK
+        string qr_code_path
+        json metadata
+        text error_message
+        bigint batch_id FK
+        integer batch_sequence
+        bigint generated_by FK
+        bigint annulled_by FK
+        text annulment_reason
+        timestamp generated_at
+        timestamp annulled_at
+        integer download_count
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    document_batches {
+        bigint id PK
+        string code UK
+        string name
+        string batch_type "campana|area|periodo|personalizado"
+        bigint document_type_id FK
+        bigint template_id FK
+        string source_module "maintenance|campaigns|assets|assignments"
+        json filter_criteria
+        integer total_documents
+        integer generated_count
+        integer failed_count
+        string status "pendiente|en_cola|procesando|completado|completado_parcial|error|cancelado"
+        decimal progress_percentage
+        string output_format "individual|consolidado|ambos"
+        string consolidated_file_path
+        string zip_file_path
+        text error_log
+        bigint requested_by FK
+        string job_id
+        timestamp started_at
+        timestamp completed_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    document_batch_items {
+        bigint id PK
+        bigint batch_id FK
+        bigint document_id FK
+        string documentable_type
+        bigint documentable_id
+        string status "pendiente|generado|error"
+        text error_message
+        integer sequence
+        timestamp processed_at
+        timestamp created_at
+    }
+
+    document_downloads {
+        bigint id PK
+        bigint document_id FK
+        bigint batch_id FK
+        bigint user_id FK
+        string download_type "individual|consolidado|zip"
+        string ip_address
+        text user_agent
+        timestamp downloaded_at
+    }
+
+    document_types ||--o{ document_templates : "tipo"
+    document_types ||--o{ documents : "clasificado"
+    document_types ||--o{ document_batches : "tipo_lote"
+    document_templates ||--o{ documents : "usa_plantilla"
+    document_templates ||--o{ document_batches : "plantilla_lote"
+    documents }o--o| document_batches : "parte_de_lote"
+    document_batches ||--o{ document_batch_items : "contiene"
+    document_batch_items }o--o| documents : "genera"
+    documents ||--o{ document_downloads : "descargado"
+    document_batches ||--o{ document_downloads : "descargado_lote"
+    users ||--o{ documents : "genera"
+    users ||--o{ document_batches : "solicita"
+    users ||--o{ document_downloads : "descarga"

@@ -1,0 +1,236 @@
+erDiagram
+    maintenance_types {
+        bigint id PK
+        string name UK
+        string slug UK
+        string description
+        string color
+        boolean requires_approval
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_priorities {
+        bigint id PK
+        string name UK
+        string slug UK
+        string color
+        integer level
+        integer max_response_hours
+        integer max_resolution_hours
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_requests {
+        bigint id PK
+        string code UK
+        bigint asset_id FK
+        bigint requester_id FK
+        bigint organizational_unit_id FK
+        bigint priority_id FK
+        string request_type "incidencia|solicitud|emergencia"
+        string subject
+        text problem_description
+        text symptoms
+        string contact_phone
+        string contact_email
+        string status "abierta|asignada|en_proceso|resuelta|cerrada|cancelada"
+        date request_date
+        timestamp assigned_at
+        timestamp resolved_at
+        timestamp closed_at
+        bigint assigned_to FK
+        text resolution_notes
+        integer satisfaction_rating
+        text satisfaction_comments
+        bigint created_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    maintenance_orders {
+        bigint id PK
+        string code UK
+        bigint request_id FK
+        bigint asset_id FK
+        bigint maintenance_type_id FK
+        bigint priority_id FK
+        bigint campaign_asset_id FK
+        string status "creada|asignada|en_diagnostico|en_ejecucion|en_espera|completada|cerrada|cancelada"
+        string subject
+        text description
+        bigint assigned_technician_id FK
+        bigint supervisor_id FK
+        date scheduled_date
+        date start_date
+        date completion_date
+        date closed_date
+        integer estimated_duration_minutes
+        integer actual_duration_minutes
+        text internal_notes
+        bigint created_by FK
+        bigint closed_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    maintenance_records {
+        bigint id PK
+        bigint order_id FK
+        bigint asset_id FK
+        bigint technician_id FK
+        date record_date
+        text reported_problem
+        text diagnostic
+        text root_cause
+        text actions_performed
+        text recommendations
+        string asset_condition_before "operativo|parcial|inoperativo"
+        string asset_condition_after "operativo|parcial|inoperativo"
+        bigint new_status_id FK
+        date next_maintenance_date
+        integer next_maintenance_days
+        boolean requires_followup
+        text followup_notes
+        boolean user_notified
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_tasks {
+        bigint id PK
+        bigint order_id FK
+        bigint record_id FK
+        string task_description
+        string task_type "diagnostico|limpieza|reparacion|reemplazo|actualizacion|configuracion|otro"
+        string status "pendiente|en_proceso|completada|omitida"
+        bigint assigned_to FK
+        integer estimated_minutes
+        integer actual_minutes
+        text observations
+        integer sort_order
+        timestamp completed_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_parts {
+        bigint id PK
+        bigint order_id FK
+        bigint record_id FK
+        string part_type "repuesto|componente|consumible|accesorio"
+        string part_name
+        string brand
+        string model
+        string serial_number
+        string old_serial_number
+        integer quantity
+        string unit
+        decimal unit_cost
+        decimal total_cost
+        bigint proveedor_id FK
+        string status "instalado|pendiente|devuelto"
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_evidences {
+        bigint id PK
+        bigint order_id FK
+        bigint record_id FK
+        string evidence_type "foto_antes|foto_despues|foto_proceso|captura_pantalla|documento|video|otro"
+        string file_name
+        string file_path
+        string mime_type
+        integer file_size
+        string description
+        string stage "diagnostico|ejecucion|resultado"
+        bigint uploaded_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    maintenance_costs {
+        bigint id PK
+        bigint order_id FK
+        string cost_type "repuesto|mano_obra|traslado|tercero|otro"
+        string description
+        decimal estimated_amount
+        decimal actual_amount
+        string currency
+        bigint proveedor_id FK
+        string invoice_number
+        date invoice_date
+        string status "estimado|aprobado|ejecutado|anulado"
+        bigint approved_by FK
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_signatures {
+        bigint id PK
+        bigint order_id FK
+        bigint record_id FK
+        string signer_type "tecnico|responsable|supervisor|usuario"
+        bigint signer_id FK
+        string signer_name
+        string signer_position
+        string signature_data
+        boolean is_conformity
+        text conformity_observations
+        string ip_address
+        timestamp signed_at
+        timestamp created_at
+    }
+
+    maintenance_schedule {
+        bigint id PK
+        bigint asset_id FK
+        bigint maintenance_type_id FK
+        string frequency "semanal|quincenal|mensual|bimestral|trimestral|semestral|anual"
+        integer frequency_days
+        date last_executed_date
+        date next_scheduled_date
+        bigint assigned_technician_id FK
+        boolean is_active
+        text notes
+        bigint created_by FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    maintenance_types ||--o{ maintenance_orders : "clasifica"
+    maintenance_types ||--o{ maintenance_schedule : "tipo_programado"
+    maintenance_priorities ||--o{ maintenance_requests : "prioriza"
+    maintenance_priorities ||--o{ maintenance_orders : "prioriza"
+    assets ||--o{ maintenance_requests : "reportado"
+    assets ||--o{ maintenance_orders : "atendido"
+    assets ||--o{ maintenance_records : "registrado"
+    assets ||--o{ maintenance_schedule : "programado"
+    employees ||--o{ maintenance_requests : "solicita"
+    organizational_units ||--o{ maintenance_requests : "originada_en"
+    maintenance_requests ||--o| maintenance_orders : "genera"
+    maintenance_orders ||--o{ maintenance_records : "registra"
+    maintenance_orders ||--o{ maintenance_tasks : "incluye"
+    maintenance_orders ||--o{ maintenance_parts : "utiliza"
+    maintenance_orders ||--o{ maintenance_evidences : "adjunta"
+    maintenance_orders ||--o{ maintenance_costs : "costea"
+    maintenance_orders ||--o{ maintenance_signatures : "firmada"
+    maintenance_records ||--o{ maintenance_tasks : "detalla"
+    maintenance_records ||--o{ maintenance_parts : "registra_repuesto"
+    maintenance_records ||--o{ maintenance_evidences : "adjunta"
+    maintenance_records ||--o{ maintenance_signatures : "confirmada"
+    tecnicos ||--o{ maintenance_orders : "asignado"
+    tecnicos ||--o{ maintenance_records : "ejecuta"
+    tecnicos ||--o{ maintenance_schedule : "tecnico_asignado"
+    proveedores ||--o{ maintenance_parts : "provee"
+    proveedores ||--o{ maintenance_costs : "factura"
+    employees ||--o{ maintenance_signatures : "firma"

@@ -1,0 +1,229 @@
+erDiagram
+    assets {
+        bigint id PK
+        string uuid UK
+        string internal_code UK
+        string patrimonial_code UK
+        string serial_number
+        string barcode
+        bigint asset_type_id FK
+        bigint marca_id FK
+        bigint modelo_id FK
+        bigint asset_status_id FK
+        bigint sede_id FK
+        bigint organizational_unit_id FK
+        bigint ubicacion_id FK
+        bigint responsable_id FK
+        bigint proveedor_id FK
+        string name
+        text description
+        date purchase_date
+        date warranty_expiry_date
+        string purchase_order_number
+        string invoice_number
+        decimal purchase_value
+        decimal current_value
+        decimal depreciation_rate
+        integer useful_life_months
+        string condition "nuevo|bueno|regular|malo|inservible"
+        string criticality "alta|media|baja"
+        date last_maintenance_date
+        date next_maintenance_date
+        integer maintenance_frequency_days
+        bigint parent_asset_id FK
+        bigint agent_device_id FK
+        text notes
+        bigint created_by FK
+        bigint updated_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    asset_attributes {
+        bigint id PK
+        bigint asset_id FK
+        string attribute_name
+        string attribute_value
+        string attribute_type "text|number|date|boolean|json"
+        string group
+        integer sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    asset_components {
+        bigint id PK
+        bigint asset_id FK
+        string component_type
+        string brand
+        string model
+        string serial_number
+        string description
+        string capacity
+        string status "operativo|defectuoso|reemplazado"
+        date install_date
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    asset_licenses {
+        bigint id PK
+        bigint asset_id FK
+        string software_name
+        string license_key
+        string license_type "oem|retail|volume|subscription"
+        string version
+        string vendor
+        date activation_date
+        date expiry_date
+        integer seats
+        decimal cost
+        string status "activa|expirada|revocada"
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    asset_files {
+        bigint id PK
+        bigint asset_id FK
+        string file_type "foto|factura|garantia|manual|otro"
+        string file_name
+        string file_path
+        string mime_type
+        integer file_size
+        string description
+        bigint uploaded_by FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    asset_status_histories {
+        bigint id PK
+        bigint asset_id FK
+        bigint previous_status_id FK
+        bigint new_status_id FK
+        string reason
+        text notes
+        bigint motivo_baja_id FK
+        bigint changed_by FK
+        timestamp changed_at
+        timestamp created_at
+    }
+
+    asset_tags {
+        bigint id PK
+        string name UK
+        string slug UK
+        string color
+        timestamp created_at
+    }
+
+    asset_tag_pivot {
+        bigint id PK
+        bigint asset_id FK
+        bigint tag_id FK
+        timestamp created_at
+    }
+
+    asset_categories {
+        bigint id PK
+        string name UK
+        string slug UK
+        string description
+        string icon
+        integer sort_order
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    asset_types {
+        bigint id PK
+        string name UK
+        string slug UK
+        bigint category_id FK
+        string description
+        string icon
+        json default_attributes
+        integer useful_life_months
+        boolean is_active
+        integer sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    marcas {
+        bigint id PK
+        string name UK
+        string slug UK
+        string logo_path
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    modelos {
+        bigint id PK
+        string name
+        bigint marca_id FK
+        bigint asset_type_id FK
+        string part_number
+        text specifications
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    asset_statuses {
+        bigint id PK
+        string name UK
+        string slug UK
+        string color
+        string description
+        boolean allows_assignment
+        boolean allows_maintenance
+        boolean is_final
+        integer sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    motivos_baja {
+        bigint id PK
+        string name UK
+        string description
+        boolean requires_document
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    asset_categories ||--o{ asset_types : "agrupa"
+    asset_types ||--o{ modelos : "aplica_a"
+    marcas ||--o{ modelos : "tiene"
+    assets }o--|| asset_types : "es_tipo"
+    assets }o--|| asset_statuses : "tiene_estado"
+    assets }o--o| marcas : "es_marca"
+    assets }o--o| modelos : "es_modelo"
+    assets }o--o| sedes : "ubicado_en"
+    assets }o--o| organizational_units : "asignado_a"
+    assets }o--o| ubicaciones : "localizado_en"
+    assets }o--o| employees : "responsable"
+    assets }o--o| proveedores : "adquirido_de"
+    assets ||--o{ assets : "compuesto_por"
+    assets ||--o{ asset_attributes : "tiene"
+    assets ||--o{ asset_components : "contiene"
+    assets ||--o{ asset_licenses : "tiene"
+    assets ||--o{ asset_files : "adjunta"
+    assets ||--o{ asset_status_histories : "registra_cambios"
+    assets ||--o{ asset_tag_pivot : "etiquetado"
+    asset_tags ||--o{ asset_tag_pivot : "aplicado_a"
+    asset_statuses ||--o{ asset_status_histories : "estado_anterior"
+    asset_statuses ||--o{ asset_status_histories : "estado_nuevo"
+    motivos_baja ||--o{ asset_status_histories : "motivo"

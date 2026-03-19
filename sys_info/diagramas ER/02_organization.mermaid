@@ -1,0 +1,58 @@
+erDiagram
+    sedes {
+        bigint id PK
+        string code UK
+        string name
+        string address
+        string phone
+        string email
+        decimal latitude
+        decimal longitude
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    organizational_units {
+        bigint id PK
+        string code UK
+        string name
+        string abbreviation
+        string type "gerencia|subgerencia|oficina|area"
+        integer level
+        bigint parent_id FK "self-reference"
+        bigint sede_id FK
+        bigint responsable_id FK
+        string floor
+        string room_number
+        text description
+        boolean is_active
+        integer sort_order
+        string full_path "cache de ruta completa"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    ubicaciones {
+        bigint id PK
+        string code UK
+        string name
+        string description
+        bigint sede_id FK
+        bigint organizational_unit_id FK
+        string floor
+        string building
+        string reference
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    sedes ||--o{ organizational_units : "contiene"
+    organizational_units ||--o{ organizational_units : "padre_de"
+    organizational_units }o--o| employees : "responsable"
+    sedes ||--o{ ubicaciones : "tiene"
+    organizational_units ||--o{ ubicaciones : "tiene"

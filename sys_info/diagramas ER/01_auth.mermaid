@@ -1,0 +1,89 @@
+erDiagram
+    users {
+        bigint id PK
+        string uuid UK
+        string name
+        string email UK
+        string password
+        string phone
+        string avatar
+        boolean is_active
+        bigint employee_id FK
+        timestamp email_verified_at
+        timestamp last_login_at
+        string last_login_ip
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    roles {
+        bigint id PK
+        string name UK
+        string slug UK
+        string description
+        boolean is_system
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    permissions {
+        bigint id PK
+        string name UK
+        string slug UK
+        string module
+        string group
+        string description
+        boolean is_system
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    role_user {
+        bigint id PK
+        bigint user_id FK
+        bigint role_id FK
+        bigint assigned_by FK
+        timestamp created_at
+    }
+
+    permission_role {
+        bigint id PK
+        bigint permission_id FK
+        bigint role_id FK
+        timestamp created_at
+    }
+
+    permission_user {
+        bigint id PK
+        bigint permission_id FK
+        bigint user_id FK
+        string type "allow|deny"
+        bigint assigned_by FK
+        timestamp created_at
+    }
+
+    sessions {
+        string id PK
+        bigint user_id FK
+        string ip_address
+        text user_agent
+        text payload
+        integer last_activity
+    }
+
+    password_resets {
+        bigint id PK
+        string email
+        string token
+        timestamp created_at
+    }
+
+    users ||--o{ role_user : "tiene"
+    roles ||--o{ role_user : "asignado_a"
+    roles ||--o{ permission_role : "tiene"
+    permissions ||--o{ permission_role : "asignado_a"
+    users ||--o{ permission_user : "tiene_permiso_directo"
+    permissions ||--o{ permission_user : "asignado_a"
+    users ||--o{ sessions : "tiene"

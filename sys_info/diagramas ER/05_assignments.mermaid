@@ -1,0 +1,118 @@
+erDiagram
+    asset_assignments {
+        bigint id PK
+        string code UK
+        bigint asset_id FK
+        bigint employee_id FK
+        bigint organizational_unit_id FK
+        bigint ubicacion_id FK
+        string assignment_type "personal|area|oficina|temporal"
+        date assignment_date
+        date expected_return_date
+        date actual_return_date
+        string status "vigente|finalizada|cancelada"
+        text purpose
+        text conditions
+        text observations
+        bigint assigned_by FK
+        bigint received_by FK
+        bigint returned_to FK
+        bigint delivery_document_id FK
+        bigint return_document_id FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    asset_movements {
+        bigint id PK
+        string code UK
+        bigint asset_id FK
+        string movement_type "traslado|reasignacion|prestamo|devolucion|retiro|ingreso"
+        bigint from_sede_id FK
+        bigint from_organizational_unit_id FK
+        bigint from_ubicacion_id FK
+        bigint from_employee_id FK
+        bigint to_sede_id FK
+        bigint to_organizational_unit_id FK
+        bigint to_ubicacion_id FK
+        bigint to_employee_id FK
+        date movement_date
+        string reason
+        text observations
+        boolean is_permanent
+        date expected_return_date
+        string status "pendiente|en_transito|completado|cancelado"
+        bigint authorized_by FK
+        bigint executed_by FK
+        bigint document_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    asset_custody_records {
+        bigint id PK
+        bigint asset_id FK
+        bigint employee_id FK
+        bigint organizational_unit_id FK
+        bigint ubicacion_id FK
+        date start_date
+        date end_date
+        string custody_type "titular|temporal|interino"
+        boolean is_current
+        bigint assignment_id FK
+        bigint movement_id FK
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    delivery_receipts {
+        bigint id PK
+        string code UK
+        string receipt_type "entrega|devolucion|traslado"
+        bigint assignment_id FK
+        bigint movement_id FK
+        bigint delivered_by FK
+        bigint received_by FK
+        date receipt_date
+        text asset_condition_notes
+        text observations
+        string signature_delivered_by
+        string signature_received_by
+        string status "pendiente_firma|firmado|anulado"
+        bigint document_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    delivery_receipt_items {
+        bigint id PK
+        bigint delivery_receipt_id FK
+        bigint asset_id FK
+        string condition_at_delivery "bueno|regular|malo"
+        text observations
+        boolean includes_accessories
+        text accessories_detail
+        timestamp created_at
+    }
+
+    assets ||--o{ asset_assignments : "asignado"
+    assets ||--o{ asset_movements : "movido"
+    assets ||--o{ asset_custody_records : "custodiado"
+    assets ||--o{ delivery_receipt_items : "incluido_en"
+    employees ||--o{ asset_assignments : "recibe"
+    employees ||--o{ asset_custody_records : "custodia"
+    organizational_units ||--o{ asset_assignments : "destino"
+    organizational_units ||--o{ asset_movements : "origen"
+    organizational_units ||--o{ asset_movements : "destino"
+    organizational_units ||--o{ asset_custody_records : "ubicacion"
+    sedes ||--o{ asset_movements : "sede_origen"
+    sedes ||--o{ asset_movements : "sede_destino"
+    employees ||--o{ asset_movements : "responsable_origen"
+    employees ||--o{ asset_movements : "responsable_destino"
+    asset_assignments ||--o| delivery_receipts : "genera_entrega"
+    asset_movements ||--o| delivery_receipts : "genera_cargo"
+    delivery_receipts ||--o{ delivery_receipt_items : "detalla"
+    employees ||--o{ delivery_receipts : "entrega"
+    employees ||--o{ delivery_receipts : "recibe"
