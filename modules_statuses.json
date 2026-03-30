@@ -1,0 +1,14 @@
+{
+    "Core": true,
+    "Auth": true,
+    "Organization": true,
+    "Staff": true,
+    "Assets": true,
+    "Assignments": true,
+    "Maintenance": true,
+    "Campaigns": true,
+    "Agent": true,
+    "AI": true,
+    "Audit": true,
+    "Settings": true
+}
